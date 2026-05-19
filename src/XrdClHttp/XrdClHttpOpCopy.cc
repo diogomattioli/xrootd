@@ -75,6 +75,12 @@ CurlCopyOp::CurlCopyOp(XrdCl::ResponseHandler *handler, const std::string &sourc
         curl_easy_setopt(m_curl.get(), CURLOPT_XFERINFOFUNCTION, nullptr);
         CurlOperation::ReleaseHandle();
     }
+
+    void 
+    CurlCopyOp::SetCallback(std::function<void(off_t)> callback)
+    {
+        m_callback = callback;
+    }
     
     size_t
     CurlCopyOp::WriteCallback(char *buffer, size_t size, size_t nitems, void *this_ptr)
@@ -106,7 +112,7 @@ CurlCopyOp::CurlCopyOp(XrdCl::ResponseHandler *handler, const std::string &sourc
             m_bytemark = -1;
         } else if (line == "End") {
             if (m_bytemark > -1 && m_callback) {
-                m_callback->Progress(m_bytemark);
+                m_callback(m_bytemark);
             }
         } else {
             auto key_end_pos = line.find(':');

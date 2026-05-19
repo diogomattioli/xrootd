@@ -822,13 +822,7 @@ public:
     void Success() override;
     void ReleaseHandle() override;
 
-    class CurlProgressCallback {
-    public:
-        virtual ~CurlProgressCallback() {}
-        virtual void Progress(off_t bytemark) = 0;
-    };
-
-    void SetCallback(std::unique_ptr<CurlProgressCallback> callback);
+    void SetCallback(std::function<void(off_t)> callback);
 
     virtual HttpVerb GetVerb() const override {return HttpVerb::COPY;}
 
@@ -849,7 +843,7 @@ private:
     std::string m_line_buffer;
 
     // A callback object for when a performance marker is received
-    std::unique_ptr<CurlProgressCallback> m_callback;
+    std::function<void(off_t)> m_callback;
 
     // The performance marker indication of bytes processed.
     off_t m_bytemark{-1};
