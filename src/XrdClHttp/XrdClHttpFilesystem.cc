@@ -41,6 +41,11 @@ Filesystem::Filesystem(const std::string &url, std::shared_ptr<HandlerQueue> que
 
 Filesystem::~Filesystem() noexcept {}
 
+std::unique_ptr<XrdCl::CopyJob> Filesystem::ThirdPartyCopy(uint32_t jobId, XrdCl::PropertyList *jobProperties, XrdCl::PropertyList *jobResults)
+{
+    return nullptr;
+}
+
 XrdCl::XRootDStatus
 Filesystem::DirList(const std::string          &path,
                     XrdCl::DirListFlags::Flags  flags,

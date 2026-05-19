@@ -51,6 +51,8 @@ public:
 
     virtual ~Filesystem() noexcept;
 
+    virtual std::unique_ptr<XrdCl::CopyJob> ThirdPartyCopy(uint32_t jobId, XrdCl::PropertyList *jobProperties, XrdCl::PropertyList *jobResults) override;
+    
     XrdCl::XRootDStatus DirList(const std::string          &path,
                                 XrdCl::DirListFlags::Flags  flags,
                                 XrdCl::ResponseHandler     *handler,

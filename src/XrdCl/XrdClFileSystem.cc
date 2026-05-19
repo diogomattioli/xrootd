@@ -1129,6 +1129,27 @@ namespace XrdCl
     delete pImpl;
   }
 
+
+  std::unique_ptr<CopyJob> FileSystem::ThirdPartyCopy(uint32_t jobId, XrdCl::PropertyList *jobProperties, XrdCl::PropertyList *jobResults)
+  {
+    if (pPlugIn)
+      if (auto job = pPlugIn->ThirdPartyCopy(jobId, jobProperties, jobResults); job)
+        return job;
+
+    class DummyJob : public CopyJob
+    {
+    public:
+      DummyJob() : CopyJob(0, nullptr, nullptr)
+      {}
+      virtual XRootDStatus Run( CopyProgressHandler *progress = 0 ) override
+      {
+        return {stError, errNotSupported};
+      }
+    };
+    
+    return std::make_unique<DummyJob>();
+  }
+
   //----------------------------------------------------------------------------
   // Locate a file - async
   //----------------------------------------------------------------------------

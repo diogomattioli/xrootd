@@ -27,11 +27,15 @@
 
 #include "XrdCl/XrdClURL.hh"
 #include "XrdCl/XrdClStatus.hh"
+#include "XrdClPropertyList.hh"
+#include "XrdClCopyProcess.hh"
+#include "XrdClCopyJob.hh"
 #include "XrdOuc/XrdOucEnum.hh"
 #include "XrdOuc/XrdOucCompiler.hh"
 #include "XrdCl/XrdClXRootDResponses.hh"
 #include "XrdSys/XrdSysPthread.hh"
 #include "XProtocol/XProtocol.hh"
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -225,6 +229,8 @@ namespace XrdCl
       //! Destructor
       //------------------------------------------------------------------------
       ~FileSystem();
+
+      std::unique_ptr<CopyJob> ThirdPartyCopy(uint32_t jobId, XrdCl::PropertyList *jobProperties, XrdCl::PropertyList *jobResults);
 
       //------------------------------------------------------------------------
       //! Locate a file - async

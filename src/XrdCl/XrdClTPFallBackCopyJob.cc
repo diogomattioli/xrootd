@@ -38,21 +38,12 @@ namespace XrdCl
   TPFallBackCopyJob::TPFallBackCopyJob( uint32_t      jobId,
                                         PropertyList *jobProperties,
                                         PropertyList *jobResults ):
-    CopyJob( jobId, jobProperties, jobResults ),
-    pJob( 0 )
+    CopyJob( jobId, jobProperties, jobResults )
   {
     Log *log = DefaultEnv::GetLog();
     log->Debug( UtilityMsg, "Creating a third party fall back copy job, "
                 "from %s to %s", GetSource().GetObfuscatedURL().c_str(),
                 GetTarget().GetObfuscatedURL().c_str() );
-  }
-
-  //------------------------------------------------------------------------
-  // Destructor
-  //------------------------------------------------------------------------
-  TPFallBackCopyJob::~TPFallBackCopyJob()
-  {
-    delete pJob;
   }
 
   //----------------------------------------------------------------------------
@@ -70,9 +61,19 @@ namespace XrdCl
     if( tmp == "first" )
       tpcFallBack = true;
 
-    pJob = new ThirdPartyCopyJob( pJobId, pProperties, pResults );
-    XRootDStatus st = pJob->Run( progress );
+    XRootDStatus st = ThirdPartyCopyJob(pJobId, pProperties, pResults).Run(progress);
     if( st.IsOK() ) return st; // we are done
+
+    // try with the plugins
+    if (st.code == errNotSupported)
+    {
+      FileSystem fs(GetSource());
+
+      auto job = fs.ThirdPartyCopy(pJobId, pProperties, pResults);
+      st = job->Run(progress);
+      if (st.IsOK())
+        return st;
+    }
 
     // check if we can fall back to streaming
     if( tpcFallBack && ( st.code == errNotSupported || st.code == errOperationExpired ) )
@@ -80,9 +81,7 @@ namespace XrdCl
       Log *log = DefaultEnv::GetLog();
       log->Debug( UtilityMsg, "TPC is not supported, falling back to streaming mode." );
 
-      delete pJob;
-      pJob = new ClassicCopyJob( pJobId, pProperties, pResults );
-      return pJob->Run( progress );
+      return ClassicCopyJob(pJobId, pProperties, pResults).Run(progress);
     }
 
     return st;

@@ -350,6 +350,12 @@ namespace XrdCl
       //------------------------------------------------------------------------
       virtual ~FileSystemPlugIn() {}
 
+      virtual std::unique_ptr<CopyJob> ThirdPartyCopy(uint32_t jobId, XrdCl::PropertyList *jobProperties, XrdCl::PropertyList *jobResults)
+      {
+        (void)jobId; (void)jobProperties; (void)jobResults;
+        return nullptr;
+      }
+
       //------------------------------------------------------------------------
       //! @see XrdCl::FileSystem::Locate
       //------------------------------------------------------------------------
