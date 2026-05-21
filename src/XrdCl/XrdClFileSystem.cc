@@ -1138,8 +1138,10 @@ namespace XrdCl
 
     class DummyJob : public CopyJob
     {
+    private:
+      XrdCl::PropertyList pList{};
     public:
-      DummyJob() : CopyJob(0, nullptr, nullptr)
+      DummyJob() : CopyJob(0, &pList, &pList)
       {}
       virtual XRootDStatus Run( CopyProgressHandler *progress = 0 ) override
       {
