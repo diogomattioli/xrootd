@@ -14,8 +14,7 @@ ThirdPartyCopy::ThirdPartyCopy(uint32_t      jobId,
                                 std::shared_ptr<XrdClHttp::HandlerQueue> queue,
                                 CreateConnCalloutType callout) :
     CopyJob(jobId, jobProperties, jobResults),
-    m_queue(queue),
-    callout(callout)
+    m_queue(queue)
 {
     XrdCl::Log *log = XrdCl::DefaultEnv::GetLog();
     log->Debug( XrdCl::UtilityMsg, "Creating a HTTP third party copy job, from %s to %s",
@@ -28,38 +27,41 @@ XrdCl::XRootDStatus ThirdPartyCopy::Run(XrdCl::CopyProgressHandler *progress)
 
     log->Debug(kLogXrdClHttp, "XrdClHttp::ThirdPartyCopy Copy Op src %s dst %s", GetSource().GetURL().c_str(), GetTarget().GetURL().c_str());
 
-    std::shared_ptr<CurlStatOp> op_stat(new CurlStatOp(nullptr, GetSource().GetURL(), {10,0}, log, true, callout, nullptr));
+    std::shared_ptr<CurlStatOp> op_stat(new CurlStatOp(nullptr, GetSource().GetURL(), {10,0}, log, true, nullptr, nullptr));
 
     try {
         m_queue->Produce(op_stat);
     } catch (...) {
-        log->Warning(kLogXrdClHttp, "Failed to add copy op to queue");
+        log->Warning(kLogXrdClHttp, "Failed to add stat op to queue");
         return XrdCl::XRootDStatus(XrdCl::stError, XrdCl::errOSError);
     }
 
     while (!op_stat->IsDone())
-        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     if (op_stat->HasFailed())
-        return {123, 456, 789};
+        return {XrdCl::stError, XrdCl::errFcntl};
 
     std::size_t size = op_stat->GetStatInfo().first;
 
-    std::shared_ptr<CurlCopyOp> op(new CurlCopyOp(nullptr, GetSource().GetURL(), {}, GetTarget().GetURL(), {}, {10, 0}, nullptr, callout));
-    op->SetCallback([this, progress, size] (auto bytemark)
+    std::shared_ptr<CurlCopyOp> op_copy(new CurlCopyOp(nullptr, GetSource().GetURL(), {}, GetTarget().GetURL(), {}, {10, 0}, nullptr, nullptr));
+    op_copy->SetCallback([this, progress, size] (auto bytemark)
         {
             progress->JobProgress(this->pJobId, bytemark, size);
         });
 
     try {
-        m_queue->Produce(op);
+        m_queue->Produce(op_copy);
     } catch (...) {
         log->Warning(kLogXrdClHttp, "Failed to add copy op to queue");
         return XrdCl::XRootDStatus(XrdCl::stError, XrdCl::errOSError);
     }
 
-    while (!op->IsDone())
+    while (!op_copy->IsDone())
         std::this_thread::sleep_for(std::chrono::milliseconds(250));
+
+    if (!op_copy->IsSentSucessfully())
+        return {XrdCl::stError, XrdCl::errPipelineFailed, 0, op_copy->GetSendingFailureMessage()};
 
     progress->JobProgress(pJobId, size, size);
 

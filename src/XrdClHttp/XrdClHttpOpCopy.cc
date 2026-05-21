@@ -89,8 +89,10 @@ CurlCopyOp::CurlCopyOp(XrdCl::ResponseHandler *handler, const std::string &sourc
         me->UpdateBytes(size * nitems);
         std::string_view str_data(buffer, size * nitems);
         size_t end_line;
-        while ((end_line = str_data.find('\n')) != std::string_view::npos) {
+        while ((end_line = std::min(str_data.size(), str_data.find('\n'))) > 0) {
+
             auto cur_line = str_data.substr(0, end_line);
+
             if (me->m_line_buffer.empty()) {
                 me->HandleLine(cur_line);
             } else {
@@ -98,6 +100,10 @@ CurlCopyOp::CurlCopyOp(XrdCl::ResponseHandler *handler, const std::string &sourc
                 me->HandleLine(me->m_line_buffer);
                 me->m_line_buffer.clear();
             }
+
+            if (end_line == str_data.size())
+                break;
+
             str_data = str_data.substr(end_line + 1);
         }
         me->m_line_buffer = str_data;

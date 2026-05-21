@@ -9,7 +9,6 @@ class ThirdPartyCopy : public XrdCl::CopyJob
 {
 private:
     std::shared_ptr<XrdClHttp::HandlerQueue> m_queue;
-    CreateConnCalloutType callout;
 
 public:
     ThirdPartyCopy(uint32_t      jobId,

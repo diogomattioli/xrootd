@@ -826,6 +826,9 @@ public:
 
     virtual HttpVerb GetVerb() const override {return HttpVerb::COPY;}
 
+    bool IsSentSucessfully() {return m_sent_success;}
+    std::string GetSendingFailureMessage() {return m_failure;}
+
 private:
     // Callback for writing the response body to the internal buffer.
     static size_t WriteCallback(char *buffer, size_t size, size_t nitems, void *this_ptr);
