@@ -33,8 +33,7 @@ public:
 ThirdPartyCopy::ThirdPartyCopy(uint32_t      jobId,
                                 XrdCl::PropertyList *jobProperties,
                                 XrdCl::PropertyList *jobResults,
-                                std::shared_ptr<XrdClHttp::HandlerQueue> queue,
-                                CreateConnCalloutType callout) :
+                                std::shared_ptr<XrdClHttp::HandlerQueue> queue) :
     CopyJob(jobId, jobProperties, jobResults),
     m_queue(queue)
 {

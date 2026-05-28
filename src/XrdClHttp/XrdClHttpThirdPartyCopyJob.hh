@@ -14,8 +14,7 @@ public:
     ThirdPartyCopy(uint32_t      jobId,
                     XrdCl::PropertyList *jobProperties,
                     XrdCl::PropertyList *jobResults,
-                    std::shared_ptr<XrdClHttp::HandlerQueue> queue,
-                    CreateConnCalloutType callout);
+                    std::shared_ptr<XrdClHttp::HandlerQueue> queue);
     virtual ~ThirdPartyCopy() = default;
     virtual XrdCl::XRootDStatus Run(XrdCl::CopyProgressHandler *progress = 0) override;
 };

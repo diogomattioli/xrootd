@@ -45,7 +45,7 @@ Filesystem::~Filesystem() noexcept {}
 
 std::unique_ptr<XrdCl::CopyJob> Filesystem::ThirdPartyCopy(uint32_t jobId, XrdCl::PropertyList *jobProperties, XrdCl::PropertyList *jobResults)
 {
-    return std::make_unique<XrdClHttp::ThirdPartyCopy>(jobId, jobProperties, jobResults, this->m_queue, this->GetConnCallout());
+    return std::make_unique<XrdClHttp::ThirdPartyCopy>(jobId, jobProperties, jobResults, this->m_queue);
 }
 
 XrdCl::XRootDStatus
