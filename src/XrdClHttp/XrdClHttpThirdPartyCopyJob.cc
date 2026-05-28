@@ -44,7 +44,7 @@ XrdCl::XRootDStatus ThirdPartyCopy::Run(XrdCl::CopyProgressHandler *progress)
 
     std::size_t size = op_stat->GetStatInfo().first;
 
-    std::shared_ptr<CurlCopyOp> op_copy(new CurlCopyOp(nullptr, GetSource().GetURL(), {}, GetTarget().GetURL(), {}, {10, 0}, nullptr, nullptr));
+    std::shared_ptr<CurlCopyOp> op_copy(new CurlCopyOp(nullptr, GetSource().GetURL(), {}, GetTarget().GetURL(), {}, {10, 0}, log, nullptr));
     op_copy->SetCallback([this, progress, size] (auto bytemark)
         {
             progress->JobProgress(this->pJobId, bytemark, size);
