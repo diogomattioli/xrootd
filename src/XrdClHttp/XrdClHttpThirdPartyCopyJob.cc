@@ -10,9 +10,10 @@ using namespace XrdClHttp;
 
 class ThirdPartyCopyResponseHandler : public XrdCl::ResponseHandler
 {
-public:
+private:
     std::atomic_flag done;
 
+public:
     virtual void HandleResponse(XrdCl::XRootDStatus *status,
                                 XrdCl::AnyObject    *response )
     {
