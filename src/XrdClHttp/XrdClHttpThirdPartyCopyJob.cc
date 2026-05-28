@@ -4,9 +4,28 @@
 #include "XrdCl/XrdClDefaultEnv.hh"
 #include "XrdCl/XrdClUtils.hh"
 
-#include <thread>
+#include <atomic>
 
 using namespace XrdClHttp;
+
+class ThirdPartyCopyResponseHandler : public XrdCl::ResponseHandler
+{
+public:
+    std::atomic_flag done;
+
+    virtual void HandleResponse(XrdCl::XRootDStatus *status,
+                                XrdCl::AnyObject    *response )
+    {
+        done.test_and_set();
+        done.notify_all();
+    }
+
+    void wait()
+    {
+        done.wait(false);
+        done.clear();
+    }
+};
 
 ThirdPartyCopy::ThirdPartyCopy(uint32_t      jobId,
                                 XrdCl::PropertyList *jobProperties,
@@ -23,11 +42,13 @@ ThirdPartyCopy::ThirdPartyCopy(uint32_t      jobId,
 
 XrdCl::XRootDStatus ThirdPartyCopy::Run(XrdCl::CopyProgressHandler *progress)
 {
+    ThirdPartyCopyResponseHandler rh;
+
     XrdCl::Log *log = XrdCl::DefaultEnv::GetLog();
 
     log->Debug(kLogXrdClHttp, "XrdClHttp::ThirdPartyCopy Copy Op src %s dst %s", GetSource().GetURL().c_str(), GetTarget().GetURL().c_str());
 
-    std::shared_ptr<CurlStatOp> op_stat(new CurlStatOp(nullptr, GetSource().GetURL(), {10,0}, log, true, nullptr, nullptr));
+    std::shared_ptr<CurlStatOp> op_stat(new CurlStatOp(&rh, GetSource().GetURL(), {10,0}, log, true, nullptr, nullptr));
 
     try {
         m_queue->Produce(op_stat);
@@ -36,15 +57,14 @@ XrdCl::XRootDStatus ThirdPartyCopy::Run(XrdCl::CopyProgressHandler *progress)
         return XrdCl::XRootDStatus(XrdCl::stError, XrdCl::errOSError);
     }
 
-    while (!op_stat->IsDone())
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    rh.wait();
 
     if (op_stat->HasFailed())
         return {XrdCl::stError, XrdCl::errFcntl};
 
     std::size_t size = op_stat->GetStatInfo().first;
 
-    std::shared_ptr<CurlCopyOp> op_copy(new CurlCopyOp(nullptr, GetSource().GetURL(), {}, GetTarget().GetURL(), {}, {10, 0}, log, nullptr));
+    std::shared_ptr<CurlCopyOp> op_copy(new CurlCopyOp(&rh, GetSource().GetURL(), {}, GetTarget().GetURL(), {}, {10, 0}, log, nullptr));
     op_copy->SetCallback([this, progress, size] (auto bytemark)
         {
             progress->JobProgress(this->pJobId, bytemark, size);
@@ -57,8 +77,7 @@ XrdCl::XRootDStatus ThirdPartyCopy::Run(XrdCl::CopyProgressHandler *progress)
         return XrdCl::XRootDStatus(XrdCl::stError, XrdCl::errOSError);
     }
 
-    while (!op_copy->IsDone())
-        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    rh.wait();
 
     if (!op_copy->IsSentSucessfully())
         return {XrdCl::stError, XrdCl::errPipelineFailed, 0, op_copy->GetSendingFailureMessage()};
