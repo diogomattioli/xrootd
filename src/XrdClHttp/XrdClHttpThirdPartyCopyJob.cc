@@ -14,6 +14,8 @@ private:
     std::atomic_flag done;
 
 public:
+    virtual ~ThirdPartyCopyResponseHandler() = default;
+
     virtual void HandleResponse(XrdCl::XRootDStatus *status,
                                 XrdCl::AnyObject    *response )
     {
