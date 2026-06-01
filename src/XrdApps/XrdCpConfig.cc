@@ -297,6 +297,14 @@ do{while(optind < Argc && Legacy(optind)) {}
                                        }
                                     optarg = Argv[optind++];
                                    }
+                                if (!strcmp("push",  optarg))
+                                   {OpSpec|= DoTpcModePush;
+                                    if (optind >= Argc)
+                                       {UMSG("Missing tpc qualifier after "
+                                             "'push'");
+                                       }
+                                    optarg = Argv[optind++];
+                                   }
                                 if (!strcmp("only",  optarg)) OpSpec|= DoTpcOnly;
                                    else if (strcmp("first", optarg))
                                            {optind--;

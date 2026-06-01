@@ -146,9 +146,10 @@ static const uint64_t    DoSources      =  0x0000000000008000LL; // -y | --sourc
 static const uint64_t    OpStreams      =  'S';
 static const uint64_t    DoStreams      =  0x0000000000010000LL; // -S | --streams
 
-static const uint64_t    OpTpc          =  'T'; // -T | --tpc [delegate] {first | only}
+static const uint64_t    OpTpc          =  'T'; // -T | --tpc [delegate] [push] {first | only}
 static const uint64_t    DoTpc          =  0x0000000000020000LL; // --tpc {first | only}
 static const uint64_t    DoTpcOnly      =  0x0000000000100000LL; // --tpc          only
+static const uint64_t    DoTpcModePush  =  0x0000000000400000LL; // --tpc ... push ...
 static const uint64_t    DoTpcDlgt      =  0x0000000000800000LL; // --tpc delegate ...
 
 static const uint64_t    OpVerbose      =  'v';
