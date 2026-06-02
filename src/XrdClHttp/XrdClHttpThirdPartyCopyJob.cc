@@ -74,14 +74,17 @@ XrdCl::XRootDStatus ThirdPartyCopy::Run(XrdCl::CopyProgressHandler *progress)
     CurlCopyOp::Headers headers;
 
     bool is_pull = pProperties->Get<std::string>("thirdPartyMode") != "push";
-    int streams{};
+    int streams = 1;
     time_t tpc_timeout = 0;
 
     pProperties->Get("tpcTimeout", tpc_timeout);
 
-    if (auto env = XrdCl::DefaultEnv::GetEnv(); env && env->GetInt("SubStreamsPerChannel", streams))
-        headers.emplace_back("X-Number-Of-Streams", std::to_string(streams));
+#if 0 // disabled until XrdHttpTPC bug is fixed
+    if (auto env = XrdCl::DefaultEnv::GetEnv(); env)
+        env->GetInt("SubStreamsPerChannel", streams);
+#endif
 
+    headers.emplace_back("X-Number-Of-Streams", std::to_string(streams));
     headers.emplace_back("Overwrite", pProperties->Get<std::string>("force") == "1" ? "T" : "F");
 
     std::shared_ptr<CurlCopyOp> op_copy(new CurlCopyOp(&rh, GetSource().GetURL(), {}, GetTarget().GetURL(), {}, headers, is_pull, {tpc_timeout, 0}, log, nullptr));
