@@ -813,7 +813,7 @@ class CurlCopyOp final : public CurlOperation {
 public:
     using Headers = std::vector<std::pair<std::string, std::string>>;
 
-    CurlCopyOp(XrdCl::ResponseHandler *handler, const std::string &source_url, const Headers &source_hdrs, const std::string &dest_url, const Headers &dest_hdrs, struct timespec timeout,
+    CurlCopyOp(XrdCl::ResponseHandler *handler, const std::string &source_url, const Headers &source_hdrs, const std::string &dest_url, const Headers &dest_hdrs, const Headers &connection_hdrs, bool is_pull, struct timespec timeout,
         XrdCl::Log *logger, CreateConnCalloutType callout);
 
     virtual ~CurlCopyOp() {}
@@ -838,9 +838,6 @@ private:
 
     // Returns true if the control channel has not gotten data recently enough.
     bool ControlChannelTimeoutExpired() const;
-
-    // Source of the TPC transfer
-    std::string m_source_url;
 
     // Buffer of current response line
     std::string m_line_buffer;

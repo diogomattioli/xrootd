@@ -23,18 +23,25 @@
 using namespace XrdClHttp;
 
 CurlCopyOp::CurlCopyOp(XrdCl::ResponseHandler *handler, const std::string &source_url, const Headers &source_hdrs,
-    const std::string &dest_url, const Headers &dest_hdrs, struct timespec timeout, XrdCl::Log *logger,
+    const std::string &dest_url, const Headers &dest_hdrs, const Headers &connection_hdrs, bool is_pull, struct timespec timeout, XrdCl::Log *logger,
     CreateConnCalloutType callout) :
-        CurlOperation(handler, dest_url, timeout, logger, callout, nullptr),
-        m_source_url(source_url)
+        CurlOperation(handler, is_pull ? dest_url : source_url, timeout, logger, callout, nullptr)
     {
         m_minimum_rate = 1;
-    
-        for (const auto &info : source_hdrs) {
+
+        const Headers &regular_hdrs = !is_pull ? source_hdrs : dest_hdrs;
+        const Headers &transfer_hdrs = is_pull ? source_hdrs : dest_hdrs;
+
+        if (is_pull)
+            m_headers_list.emplace_back("Source", source_url);
+        else
+            m_headers_list.emplace_back("Destination", dest_url);
+
+        std::copy(connection_hdrs.begin(), connection_hdrs.end(), std::back_inserter(m_headers_list));
+        std::copy(regular_hdrs.begin(),    regular_hdrs.end(),    std::back_inserter(m_headers_list));
+
+        for (const auto &info : transfer_hdrs) {
             m_headers_list.emplace_back(std::string("TransferHeader") + info.first, info.second);
-        }
-        for (const auto &info : dest_hdrs) {
-            m_headers_list.emplace_back(info.first, info.second);
         }
     }
     
@@ -47,7 +54,6 @@ CurlCopyOp::CurlCopyOp(XrdCl::ResponseHandler *handler, const std::string &sourc
         curl_easy_setopt(m_curl.get(), CURLOPT_WRITEFUNCTION, CurlCopyOp::WriteCallback);
         curl_easy_setopt(m_curl.get(), CURLOPT_WRITEDATA, this);
         curl_easy_setopt(m_curl.get(), CURLOPT_CUSTOMREQUEST, "COPY");
-        m_headers_list.emplace_back("Source", m_source_url);
 
         return true;
     }
