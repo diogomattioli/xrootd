@@ -92,6 +92,8 @@ XrdCpFile          *dstFile;        // The destination for the copy
 
 char               *zipFile;        // The file name if the URL points to a ZIP archive
 
+char               *tcpTokenFile;   // The file name with TPC src and dst tokens
+
 static XrdSysError *Log;            // -> Error message object
 
 std::vector<std::string> AddCksVal; // -> Additional checksum argument
@@ -203,6 +205,9 @@ static const uint64_t    DoRetryPolicy     = 0x0000000400000000LL; // --retry-po
 
 static const uint64_t    OpZipAppend       = 0x13;
 static const uint64_t    DoZipAppend       = 0x0000000800000000LL; // --zip-append
+
+static const uint64_t    OpTpcTokenFile    = 0x14;
+static const uint64_t    DoTpcTokenFile    = 0x0000000800000000LL; // --tpc-token-file
 
 // Call Config with the parameters passed to main() to fill out this object. If
 // the method returns then no errors have been found. Otherwise, it exits.

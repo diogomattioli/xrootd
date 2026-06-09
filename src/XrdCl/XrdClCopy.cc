@@ -512,6 +512,10 @@ int main( int argc, char **argv )
   bool         doserver      = false;
   std::string thirdParty     = "none";
   std::string thirdPartyMode = "pull";
+  std::string thirdPartyTokenFile;
+  
+  if (auto value = config.tcpTokenFile; value != nullptr)
+    thirdPartyTokenFile = value;
 
   if( config.Want( XrdCpConfig::DoPosc ) )      posc       = true;
   if( config.Want( XrdCpConfig::DoForce ) )     force      = true;
@@ -909,6 +913,8 @@ int main( int argc, char **argv )
     if( xcp )
       properties.Set( "nbXcpSources",  nbSources              );
 
+    if( !thirdPartyTokenFile.empty() )
+      properties.Set( "thirdPartyTokenFile",  thirdPartyTokenFile  );
 
     XRootDStatus st = process.AddJob( properties, results );
     if( !st.IsOK() )
