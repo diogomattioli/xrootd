@@ -55,7 +55,7 @@ TEST_F(CurlCopyFixture, Test)
     auto logger = XrdCl::DefaultEnv::GetLog();
     logger->Debug(XrdClHttp::kLogXrdClHttp, "About to start copy operation");
     std::unique_ptr<XrdClHttp::CurlCopyOp> op(new XrdClHttp::CurlCopyOp(
-        &srh, source_url, source_headers, dest_url, dest_headers, {10, 0}, logger, nullptr
+        &srh, source_url, source_headers, dest_url, dest_headers, {}, true, {10, 0}, logger, nullptr
     ));
 
     // We must create at least one file or filesystem object for the factory to initialize
