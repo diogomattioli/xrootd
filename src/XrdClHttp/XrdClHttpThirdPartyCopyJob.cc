@@ -5,13 +5,18 @@
 #include "XrdCl/XrdClUtils.hh"
 
 #include <atomic>
+#include <fstream>
+#include <mutex>
+#include <condition_variable>
 
 using namespace XrdClHttp;
 
 class ThirdPartyCopyResponseHandler : public XrdCl::ResponseHandler
 {
 private:
-    std::atomic_flag done;
+    std::mutex mutex;
+    std::condition_variable cv;
+    std::atomic_bool ready{false};
 
 public:
     virtual ~ThirdPartyCopyResponseHandler() = default;
@@ -19,14 +24,18 @@ public:
     virtual void HandleResponse(XrdCl::XRootDStatus *status,
                                 XrdCl::AnyObject    *response )
     {
-        done.test_and_set();
-        done.notify_all();
+        {
+            std::lock_guard lock(mutex);
+            ready.store(true);
+        }
+        cv.notify_all();
     }
 
     void wait()
     {
-        done.wait(false);
-        done.clear();
+        std::unique_lock lock(mutex);
+        cv.wait(lock, [this]{ return this->ready.load(); });
+        ready.store(false);
     }
 };
 
@@ -40,7 +49,7 @@ ThirdPartyCopy::ThirdPartyCopy(uint32_t      jobId,
     const auto &p = jobProperties;
     for (const auto &item : *p)
         std::cout << item.first << ":" << item.second << std::endl;
-
+        
     XrdCl::Log *log = XrdCl::DefaultEnv::GetLog();
     log->Debug( XrdCl::UtilityMsg, "Creating a HTTP third party copy job, from %s to %s",
                 GetSource().GetObfuscatedURL().c_str(), GetTarget().GetObfuscatedURL().c_str() );
@@ -71,8 +80,6 @@ XrdCl::XRootDStatus ThirdPartyCopy::Run(XrdCl::CopyProgressHandler *progress)
         log->Warning(kLogXrdClHttp, "Failed to add stat op to queue");
     }
 
-    CurlCopyOp::Headers headers;
-
     bool is_pull = pProperties->Get<std::string>("thirdPartyMode") != "push";
     int streams = 1;
     time_t tpc_timeout = 0;
@@ -84,10 +91,34 @@ XrdCl::XRootDStatus ThirdPartyCopy::Run(XrdCl::CopyProgressHandler *progress)
         env->GetInt("SubStreamsPerChannel", streams);
 #endif
 
+    CurlCopyOp::Headers headers;
+    CurlCopyOp::Headers src_hdrs;
+    CurlCopyOp::Headers dst_hdrs;
+
+    if (const auto token_file = pProperties->Get<std::string>("thirdPartyTokenFile"); !token_file.empty())
+    {
+        if (std::ifstream file(token_file); file.is_open())
+        {
+            const auto read_token = [&file] (CurlCopyOp::Headers &headers)
+            {
+                if(std::string line; std::getline(file, line))
+                    headers.emplace_back("Authorization", std::string("Bearer ") + line);
+            };
+
+            read_token(src_hdrs);
+            read_token(dst_hdrs);
+        }
+        else
+        {
+            log->Warning(kLogXrdClHttp, "Failed to open token file");
+            return XrdCl::XRootDStatus(XrdCl::stError, XrdCl::errAuthFailed);
+        }
+    }
+
     headers.emplace_back("X-Number-Of-Streams", std::to_string(streams));
     headers.emplace_back("Overwrite", pProperties->Get<std::string>("force") == "1" ? "T" : "F");
 
-    std::shared_ptr<CurlCopyOp> op_copy(new CurlCopyOp(&rh, GetSource().GetURL(), {}, GetTarget().GetURL(), {}, headers, is_pull, {tpc_timeout, 0}, log, nullptr));
+    std::shared_ptr<CurlCopyOp> op_copy(new CurlCopyOp(&rh, GetSource().GetURL(), src_hdrs, GetTarget().GetURL(), dst_hdrs, headers, is_pull, {tpc_timeout, 0}, log, nullptr));
     op_copy->SetCallback([this, progress, size] (auto bytemark)
         {
             progress->JobProgress(this->pJobId, bytemark, size);
