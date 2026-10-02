@@ -1,2 +1,4 @@
-add_bats_test(XrdOssMirage::pattern mirage.bats)
-add_bats_test(XrdOssMirage::large_files mirage_32bits.bats)
+add_bats_test(XrdOssMirage::mirage mirage.bats)
+add_bats_test(XrdOssMirage::mirage_32bits mirage_32bits.bats)
+add_bats_test(XrdOssMirage::mirage_wrapper mirage_wrapper.bats)
+add_bats_test(XrdOssMirage::mirage_xattr_wrapper mirage_xattr_wrapper.bats)
