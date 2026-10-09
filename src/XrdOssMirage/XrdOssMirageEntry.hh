@@ -4,6 +4,7 @@
 #include "XrdOss/XrdOss.hh"
 
 #include <memory>
+#include <cstdint>
 
 struct XrdOssMirageEntry
 {
@@ -25,7 +26,7 @@ struct XrdOssMirageEntry
     } write;
 
     std::string pattern{};
-    std::size_t size{};
+    std::uint64_t size{};
 };
 
 using XrdOssMirageEntryPtr = std::shared_ptr<XrdOssMirageEntry>;
