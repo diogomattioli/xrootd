@@ -5,8 +5,8 @@ add_library(${XrdOssMirage} MODULE XrdOssMirage.cc
     XrdOssMirageFile.cc
     XrdOssMirageXAttr.cc
     XrdOssMirageXAttrWrapper.cc
-    XrdOssMirageBase.cc
     XrdOssMirageWrapper.cc
+    XrdOssMirageWrapperBase.cc
     XrdOssMirageWrapperDir.cc
     XrdOssMirageWrapperFile.cc
     )

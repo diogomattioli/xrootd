@@ -2,14 +2,14 @@
 #define __XRD_OSS_MIRAGE_WRAPPER_HH__
 
 #include "XrdOssMirage.hh"
-#include "XrdOssMirageBase.hh"
+#include "XrdOssMirageWrapperBase.hh"
 
 #include <XrdOss/XrdOssWrapper.hh>
 
 #include <memory>
 #include <string_view>
 
-class XrdOssMirageWrapper : public XrdOssWrapper, public XrdOssMirageBase {
+class XrdOssMirageWrapper : public XrdOssWrapper, public XrdOssMirageWrapperBase {
 private:
     XrdOssMirage            mirage;
 

@@ -1,5 +1,5 @@
-#ifndef __XRD_OSS_MIRAGE_BASE_HH__
-#define __XRD_OSS_MIRAGE_BASE_HH__
+#ifndef __XRD_OSS_MIRAGE_WRAPPER_BASE_HH__
+#define __XRD_OSS_MIRAGE_WRAPPER_BASE_HH__
 
 #include "XrdOssMirage.hh"
 
@@ -11,9 +11,9 @@
 // decides if a given path belongs to the mirage back end or to the stacked
 // plugin.
 //
-class XrdOssMirageBase {
+class XrdOssMirageWrapperBase {
 public:
-    explicit XrdOssMirageBase(XrdOssMirage &mirage) noexcept : mirage(mirage) {}
+    explicit XrdOssMirageWrapperBase(XrdOssMirage &mirage) noexcept : mirage(mirage) {}
 
     bool is_mirage_path(std::string_view path) const noexcept;
 

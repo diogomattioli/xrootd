@@ -2,7 +2,7 @@
 #define __XRD_OSS_MIRAGE_WRAPPER_FILE_HH__
 
 #include "XrdOssMirage.hh"
-#include "XrdOssMirageBase.hh"
+#include "XrdOssMirageWrapperBase.hh"
 
 #include <XrdOss/XrdOssWrapper.hh>
 
@@ -15,7 +15,7 @@
 // the path and every subsequent call is forwarded to it. Until Open() decides
 // otherwise the stacked file (the one the base class wraps) stays active.
 //
-class XrdOssMirageWrapperFile : public XrdOssWrapDF, public XrdOssMirageBase {
+class XrdOssMirageWrapperFile : public XrdOssWrapDF, public XrdOssMirageWrapperBase {
 private:
     std::unique_ptr<XrdOssDF> wrapped_file;
     std::unique_ptr<XrdOssDF> mirage_file;

@@ -10,8 +10,8 @@ add_executable(xrdossmirage-unit-tests XrdOssMirageTests.cc
         ${PROJECT_SOURCE_DIR}/src/XrdOssMirage/XrdOssMirageFile.cc
         ${PROJECT_SOURCE_DIR}/src/XrdOssMirage/XrdOssMirageXAttr.cc
         ${PROJECT_SOURCE_DIR}/src/XrdOssMirage/XrdOssMirageXAttrWrapper.cc
-        ${PROJECT_SOURCE_DIR}/src/XrdOssMirage/XrdOssMirageBase.cc
         ${PROJECT_SOURCE_DIR}/src/XrdOssMirage/XrdOssMirageWrapper.cc
+        ${PROJECT_SOURCE_DIR}/src/XrdOssMirage/XrdOssMirageWrapperBase.cc
         ${PROJECT_SOURCE_DIR}/src/XrdOssMirage/XrdOssMirageWrapperFile.cc
         ${PROJECT_SOURCE_DIR}/src/XrdOssMirage/XrdOssMirageWrapperDir.cc
         )

@@ -39,7 +39,7 @@ static std::string parse_prefix(const char *parms)
 
 XrdOssMirageWrapper::XrdOssMirageWrapper(XrdOss *curr_oss, XrdSysLogger *logger, const char *parms, XrdOucEnv *envP) :
     XrdOssWrapper(*curr_oss),
-    XrdOssMirageBase(mirage),
+    XrdOssMirageWrapperBase(mirage),
     mirage(parse_prefix(parms))
 {
 

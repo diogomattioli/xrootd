@@ -2,7 +2,7 @@
 
 XrdOssMirageWrapperDir::XrdOssMirageWrapperDir(XrdOssMirage &mirage, std::unique_ptr<XrdOssDF> wrapped_dir, const char *tident) :
     XrdOssWrapDF(*wrapped_dir),
-    XrdOssMirageBase(mirage),
+    XrdOssMirageWrapperBase(mirage),
     wrapped_dir(std::move(wrapped_dir)),
     active(this->wrapped_dir.get())
 {

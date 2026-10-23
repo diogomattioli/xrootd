@@ -2,7 +2,7 @@
 #define __XRD_OSS_MIRAGE_WRAPPER_DIR_HH__
 
 #include "XrdOssMirage.hh"
-#include "XrdOssMirageBase.hh"
+#include "XrdOssMirageWrapperBase.hh"
 
 #include <XrdOss/XrdOssWrapper.hh>
 
@@ -13,7 +13,7 @@
 // Wraps a single directory request, routing on Opendir() in the same way
 // XrdOssMirageWrapperFile does on Open().
 //
-class XrdOssMirageWrapperDir : public XrdOssWrapDF, public XrdOssMirageBase {
+class XrdOssMirageWrapperDir : public XrdOssWrapDF, public XrdOssMirageWrapperBase {
 private:
     std::unique_ptr<XrdOssDF> wrapped_dir;
     std::unique_ptr<XrdOssDF> mirage_dir;
