@@ -59,6 +59,9 @@ int XrdOssMirageXAttrWrapper::List(AList **aPL, const char *Path, int fd, int ge
 
 int XrdOssMirageXAttrWrapper::Set(const char *Aname, const void *Aval, int Avsz, const char *Path, int fd, int isNew)
 {
+    if (isNew == MIRAGE_MAGIC)
+        return mirage_xattr.Set(Aname, Aval, Avsz, Path, fd, isNew);
+
     return route(Path).Set(Aname, Aval, Avsz, Path, fd, isNew);
 }
 
